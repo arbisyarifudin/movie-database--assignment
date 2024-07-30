@@ -16,12 +16,14 @@ export const metadata: Metadata = {
 export default function RootLayout({
     children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
     return (
         <html lang="en">
             <body className={montserrat.className}>
-                {children}
+                <main className="bg-background">
+                    {children}
+                </main>
                 <Bottom />
             </body>
         </html>
