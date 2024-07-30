@@ -28,7 +28,7 @@ export const SignInForm = () => {
         type="email"
         placeholder="Email"
         value={email}
-        autocomplete="new-password"
+        autoComplete="new-password"
         onChange={(e) => setEmail(e.target.value)}
       />
       <InputField
@@ -36,7 +36,7 @@ export const SignInForm = () => {
         className="mb-6"
         type="password"
         placeholder="Password"
-        autocomplete="new-password"
+        autoComplete="new-password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
