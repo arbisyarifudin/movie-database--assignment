@@ -21,7 +21,7 @@ export const SignInForm = () => {
     };
 
     return (
-        <form className="block w-full my-5" onSubmit={onSubmitLogin}>
+        <form className="block w-full sm:max-w-sm md:max-w-xs my-5" onSubmit={onSubmitLogin}>
             <InputField
                 id="email"
                 className="mb-6"
