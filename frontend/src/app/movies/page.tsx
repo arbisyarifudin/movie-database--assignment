@@ -42,7 +42,7 @@ export default function MoviePage() {
     };
 
     return (
-        <div className="p-5">
+        <div className="p-10 pt-[120px]">
             <Header />
             <MovieList
                 movies={movies}

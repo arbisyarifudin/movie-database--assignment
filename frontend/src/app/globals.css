@@ -82,3 +82,8 @@
     -webkit-text-fill-color: hsl(var(--foreground)) !important;
   }
 }
+
+/* box-sizing */
+* {
+    box-sizing: border-box;
+}
