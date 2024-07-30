@@ -12,9 +12,9 @@ const config: Config = {
       colors: {
         primary: '#2BD17E',
         error: '#EB5757',
-        'background-color': '#093545',
-        'input-color': '#093545',
-        'card-color': '#092C39',
+        'background': '#093545',
+        'input': '#224957',
+        'card': '#092C39',
       },
       spacing: {
         '2': '2px',
@@ -67,6 +67,9 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // require('@tailwindcss/forms'),
+    require('autoprefixer'),
+  ],
 };
 export default config;
