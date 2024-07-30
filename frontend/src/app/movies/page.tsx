@@ -7,24 +7,24 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 export default function MoviePage() {
     const dummyDatas = [
-        // {
-        //     id: 1,
-        //     title: 'The Shawshank Redemption',
-        //     publishingYear: 1994,
-        //     poster: 'https://picsum.photos/200/400?random=1',
-        // },
-        // {
-        //     id: 2,
-        //     title: 'The Godfather',
-        //     publishingYear: 1972,
-        //     poster: 'https://picsum.photos/200/400?random=2',
-        // },
-        // {
-        //     id: 3,
-        //     title: 'The Dark Knight',
-        //     publishingYear: 2008,
-        //     poster: 'https://picsum.photos/200/400?random=3',
-        // },
+        {
+            id: 1,
+            title: 'The Shawshank Redemption',
+            publishingYear: 1994,
+            poster: 'https://picsum.photos/200/400?random=1',
+        },
+        {
+            id: 2,
+            title: 'The Godfather',
+            publishingYear: 1972,
+            poster: 'https://picsum.photos/200/400?random=2',
+        },
+        {
+            id: 3,
+            title: 'The Dark Knight',
+            publishingYear: 2008,
+            poster: 'https://picsum.photos/200/400?random=3',
+        },
     ];
 
     const [movies, setMovies] = useState<
