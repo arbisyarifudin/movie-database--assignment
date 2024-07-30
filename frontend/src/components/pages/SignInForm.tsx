@@ -49,7 +49,7 @@ export const SignInForm = () => {
                 />
             </div>
 
-            <Button label="Login" className="mt-5" onClick={() => {}} />
+            <Button label="Login" className="mt-5 w-full" onClick={() => {}} />
         </form>
     );
 };
