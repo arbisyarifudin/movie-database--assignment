@@ -26,13 +26,13 @@ export const InputField = ({
     const handleFocus = () => setIsFocused(true);
     const handleBlur = () => setIsFocused(false);
 
-    const inputClassName = `mt-1 p-2 border rounded-[10px] py-3 px-3 outline-none transition ease-in-out delay-150 text-input
+    const inputClassName = `mt-1 p-2 border rounded-[10px] py-3 px-4 outline-none transition ease-in-out delay-150 text-white placeholder:text-white placeholder:opacity-80 placeholder:text-sm
   ${
     error
         ? '!bg-white border-error'
         : isFocused
-            ? '!bg-white border-input'
-            : '!bg-input border-input'
+            ? '!bg-white !border-input !text-input placeholder:text-input'
+            : '!bg-input !border-input'
 }`;
 
     return (
