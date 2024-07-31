@@ -20,7 +20,7 @@ const entityTsPath = path.join(__dirname, '../../src/**/*.entity.ts');
 const config = {
     entities: [entityPath],
     entitiesTs: [entityTsPath],
-    dbName: envConfig.dbDebug || './src/database/db.sqlite',
+    dbName: envConfig.dbPath || './src/database/db.sqlite',
     allowGlobalContext: true,
     highlighter: new SqlHighlighter(),
     metadataProvider: TsMorphMetadataProvider,
