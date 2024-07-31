@@ -36,6 +36,9 @@ export class AuthController {
     @UseGuards(AuthGuard('jwt'))
     @Get('me')
     getMe(@Request() req) {
-        return req.user;
+        return {
+            message: 'Success',
+            data: req.user,
+        };
     }
 }
