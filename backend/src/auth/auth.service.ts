@@ -5,7 +5,6 @@ import { User } from '../user/user.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
 import { LoginDto } from './auth.dto';
-import { logMessage } from 'src/shared/utils';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +17,7 @@ export class AuthService {
     async validateUser(email: string, password: string): Promise<any> {
         const user = await this.usersRepository.findOne({ email });
         if (user && (await bcrypt.compare(password, user.password))) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password, ...result } = user;
             return result;
         }
