@@ -20,8 +20,8 @@ export default function MovieEditPage() {
     };
 
     return (
-        <div className="p-10 pb-[120px] pt-[120px] w-full">
-            <div className="flex justify-between items-center mb-20">
+        <div className="p-10 pb-[120px] pt-[80px] md:pt-[120px] w-full">
+            <div className="flex justify-between items-center mb-10 md:mb-20">
                 <h3 className="text-[32px] font-semibold mb-0 mr-[10px]">
                     Edit
                 </h3>
