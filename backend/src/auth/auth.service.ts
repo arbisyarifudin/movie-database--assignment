@@ -4,6 +4,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../user/user.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
+import { LoginDto } from './auth.dto';
+import { logMessage } from 'src/shared/utils';
 
 @Injectable()
 export class AuthService {
@@ -22,18 +24,30 @@ export class AuthService {
         return null;
     }
 
-    async login(email: string, password: string) {
-        const user = await this.validateUser(email, password);
+    async login(data: LoginDto) {
+        const user = await this.validateUser(data.email, data.password);
         if (!user) {
             throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
         }
 
         const payload = { email: user.email, sub: user.id };
+
+        let jwtToken = null;
+
+        // Check if rememberMe is true
+        if (data.rememberMe) {
+            // Set expire token to 7 days
+            jwtToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+        } else {
+            // Else set to 1 day
+            jwtToken = this.jwtService.sign(payload, { expiresIn: '1d' });
+        }
+
         return {
             message: 'Success',
             data: {
                 user,
-                access_token: this.jwtService.sign(payload),
+                access_token: jwtToken,
             },
         };
     }

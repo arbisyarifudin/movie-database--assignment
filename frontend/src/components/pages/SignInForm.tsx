@@ -17,7 +17,6 @@ export const SignInForm = () => {
 
     const onSubmitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(email, password, rememberMe);
 
         const response = await login({email, password, rememberMe})
         if (response.data) {
