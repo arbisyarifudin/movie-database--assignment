@@ -161,17 +161,19 @@ const Movie = ({
 }) => {
     return (
         <Link
-            className="bg-card rounded-xl shadow-md cursor-pointer md:p-2"
+            className="bg-card group rounded-xl shadow-md cursor-pointer md:p-2"
             href={`/movies/${id}/edit`}
         >
-            <ImageFallback
-                src={posterUrl}
-                alt={title}
-                width={1920}
-                height={2880}
-                fallbackSrc="/images/default-poster.jpg"
-                className="w-full h-[246px] sm:h-[320px] md:h-[400px] object-cover rounded-tl-xl rounded-tr-xl md:rounded-xl"
-            />
+            <div className="relative rounded-tl-xl rounded-tr-xl md:rounded-xl overflow-hidden group-hover:after:content[''] group-hover:after:absolute group-hover:after:w-full group-hover:after:h-full group-hover:after:top-0 group-hover:after:left-0 group-hover:after:bg-[rgba(0,0,0,0.2)] group-hover:after:z-10 group-hover:after:transition-all group-hover:after:duration-500 group-hover:after:ease-in-out">
+                <ImageFallback
+                    src={posterUrl}
+                    alt={title}
+                    width={1920}
+                    height={2880}
+                    fallbackSrc="/images/default-poster.jpg"
+                    className="w-full h-[246px] sm:h-[320px] md:h-[400px] object-cover rounded-tl-xl rounded-tr-xl md:rounded-xl transform transition-all duration-500 ease-in-out group-hover:scale-110"
+                />
+            </div>
             <div className="p-3">
                 <h3
                     className="text-base xs:text-sm sm:text-[18px] md:text-[20px] font-bold md:font-normal leading-6 mb-4"
