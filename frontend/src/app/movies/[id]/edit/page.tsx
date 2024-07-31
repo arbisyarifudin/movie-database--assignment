@@ -52,6 +52,7 @@ export default function MovieEditPage({ params }: { params: { id: string } }) {
         if (!loading) {
             getMovie();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
