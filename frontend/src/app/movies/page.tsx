@@ -31,7 +31,7 @@ export default function MoviePage() {
     };
 
     return (
-        <div className="p-10 pt-[120px]">
+        <div className="p-5 md:p-10 pb-[120px] pt-[80px] md:pt-[120px] w-full">
             <Header />
             <MovieList
                 movies={movies}
@@ -116,7 +116,7 @@ const MovieList = ({
         id: number;
         title: string;
         publishingYear: number;
-        poster: string;
+        posterUrl: string;
     }[];
     pagination: {
         currentPage: number;
@@ -174,7 +174,7 @@ const Movie = ({
             />
             <div className="p-3">
                 <h3
-                    className="text-base sm:text-[18px] md:text-[20px] font-bold md:font-normal leading-6 mb-4"
+                    className="text-base xs:text-sm sm:text-[18px] md:text-[20px] font-bold md:font-normal leading-6 mb-4"
                 >
                     {title}
                 </h3>
