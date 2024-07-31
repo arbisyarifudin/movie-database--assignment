@@ -1,6 +1,6 @@
 import {
     ArgumentMetadata,
-    BadRequestException,
+    // BadRequestException,
     HttpException,
     HttpStatus,
     Injectable,
@@ -13,9 +13,9 @@ import { Dictionary } from '@mikro-orm/sqlite';
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
     async transform(value: unknown, metadata: ArgumentMetadata) {
-        if (!value) {
-            throw new BadRequestException('No data submitted');
-        }
+        // if (!value) {
+        //     throw new BadRequestException('No data submitted');
+        // }
 
         const { metatype } = metadata;
         if (!metatype || !this.toValidate(metatype)) {

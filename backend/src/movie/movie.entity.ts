@@ -3,7 +3,7 @@ import { v4 } from 'uuid';
 
 @Entity({ tableName: 'movies' })
 export class Movie {
-    @PrimaryKey({ type: 'uuid', unique: true })
+    @PrimaryKey({ type: 'uuid' })
     id: string = v4();
 
     @Property({ type: 'varchar', length: 255 })

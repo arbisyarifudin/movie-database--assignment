@@ -1,14 +1,13 @@
 import {
-    IsArray,
-    IsDateString,
     IsEnum,
+    IsNotEmpty,
     IsNumberString,
     IsOptional,
 } from 'class-validator';
 
 enum SortDirection {
-    ASC = 'ASC',
-    DESC = 'DESC',
+    ASC = 'asc',
+    DESC = 'desc',
 }
 
 export class PaginationQueryDto {
@@ -26,4 +25,15 @@ export class PaginationQueryDto {
     @IsOptional()
     @IsEnum(SortDirection)
     readonly sortDir?: SortDirection;
+}
+
+export class CreateMovieDto {
+    @IsNotEmpty()
+    readonly title: string;
+
+    @IsNotEmpty()
+    readonly publishingYear: number;
+
+    @IsOptional()
+    readonly poster?: string;
 }

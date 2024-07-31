@@ -7,15 +7,16 @@ import {
     Delete,
     Put,
     UseGuards,
-    Request,
     UseInterceptors,
     UploadedFile,
     Query,
+    UsePipes,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
-import { PaginationQueryDto } from './movie.dto';
+import { ValidationPipe } from 'src/shared/pipes/validation.pipe';
+import { CreateMovieDto, PaginationQueryDto } from './movie.dto';
 
 @Controller('movies')
 @UseGuards(AuthGuard('jwt'))
@@ -23,17 +24,15 @@ export class MovieController {
     constructor(private readonly movieService: MovieService) {}
 
     @Post()
+    @UsePipes(new ValidationPipe())
     @UseInterceptors(FileInterceptor('posterFile'))
     async create(
-        @Body() createMovieDto: any,
         @UploadedFile() file: Express.Multer.File,
-        @Request() req: any,
+        @Body() createMovieDto: CreateMovieDto,
     ) {
-        const posterUrl = file ? `/uploads/${file.filename}` : null;
         return this.movieService.create({
             ...createMovieDto,
-            poster: posterUrl,
-            user: req.user,
+            poster: file ? `/uploads/${file.filename}` : createMovieDto.poster,
         });
     }
 
@@ -48,6 +47,7 @@ export class MovieController {
     }
 
     @Put(':id')
+    @UsePipes(new ValidationPipe())
     @UseInterceptors(FileInterceptor('posterFile'))
     async update(
         @Param('id') id: string,
