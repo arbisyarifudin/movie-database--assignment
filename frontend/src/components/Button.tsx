@@ -44,7 +44,7 @@ export const Button: React.FC<ButtonProps> = ({
 
     return (
         <button
-            className={`rounded-[10px] justify-center items-center inline-flex mt-5 hover:bg-opacity-90 active:bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${colorClass} ${sizeClass} ${className}`}
+            className={`rounded-[10px] justify-center items-center inline-flex hover:bg-opacity-90 active:bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-opacity-50 ${colorClass} ${sizeClass} ${className}`}
             onClick={onClick}
             {...props}
         >

@@ -14,6 +14,7 @@ interface ErrorMessages {
 }
 
 export default function MovieCreatePage() {
+    const router = useRouter();
     const formRef = useRef<HTMLFormElement | null>(null);
 
     const [title, setTitle] = useState('');
@@ -21,7 +22,6 @@ export default function MovieCreatePage() {
     const [posterFile, setPosterFile] = useState<File | null>(null);
 
     const [errorMessages, setErrorMessages] = useState<ErrorMessages | null>(null);
-    const router = useRouter();
 
     const onSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

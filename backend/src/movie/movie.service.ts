@@ -105,7 +105,7 @@ export class MovieService {
             };
         }
 
-        this.moviesRepository.getEntityManager().removeAndFlush(movie);
+        this.moviesRepository.nativeDelete({ id });
         return {
             message: 'Movie deleted successfully',
         };

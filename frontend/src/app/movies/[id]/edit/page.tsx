@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { InputField } from '@/components/InputField';
 import { Button } from '@/components/Button';
 import { useRouter } from 'next/navigation';
-import { getMovieById, updateMovie } from '@/lib/api/movie.service';
+import { deleteMovie, getMovieById, updateMovie } from '@/lib/api/movie.service';
 import toast from 'react-hot-toast';
 interface ErrorMessages {
     title?: string;
@@ -94,12 +94,30 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
         router.push('/movies');
     }
 
+    const onDeleteMovie = async () => {
+        const response = await deleteMovie(params.id);
+
+        if (response.status === 200) {
+            toast.success('Movie deleted successfully!');
+            router.push('/movies');
+        } else {
+            toast.error('Movie deletion fails!');
+        }
+    }
+
     return (
         <div className="p-5 md:p-10 pb-[120px] pt-[80px] md:pt-[120px] w-full">
             <div className="flex justify-between items-center mb-10 md:mb-20">
                 <h3 className="text-3xl sm:text-[32px] font-semibold mb-0 mr-[10px]">
                     Edit
                 </h3>
+                <Button
+                    outline
+                    color="error"
+                    label="Delete"
+                    size="sm"
+                    onClick={onDeleteMovie}
+                />
             </div>
             <form
                 className="flex flex-col md:flex-row w-full my-5 md:space-x-10"
