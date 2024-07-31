@@ -3,23 +3,34 @@ import axiosInstance from './axiosConfig';
 export const getMovieList = async (params?: {
     page?: number;
     limit?: number;
+    sortBy?: 'title' | 'publishingYear' | 'createdAt';
+    sortDir?: 'asc' | 'desc';
 }) => {
-    const { page = 1, limit = 10 } = params || {};
+    const { page = 1, limit = 10, sortBy = 'createdAt', sortDir = 'desc' } = params || {};
     try {
         const response = await axiosInstance.get('/movies', {
             params: {
                 page,
                 limit,
+                sortBy,
+                sortDir,
             },
         });
 
         console.log('Success fetch movie list', response);
         if (response.data?.data) {
+            const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
             return {
-                data: response.data.data,
+                data: response.data.data.map((item: any) => {
+                    return {
+                        ...item,
+                        posterUrl: `${apiUrl}${item.poster}`,
+                    }
+                }),
                 pagination: response.data?.meta,
             };
         }
+        return response
     } catch (error) {
         console.error('Error fetching movie list:', error);
         return error;

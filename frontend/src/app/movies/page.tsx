@@ -7,40 +7,27 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
 import useAuthStore from '@/stores/authStore';
 import toast from 'react-hot-toast';
-export default function MoviePage() {
-    const dummyDatas = [
-        {
-            id: 1,
-            title: 'The Shawshank Redemption',
-            publishingYear: 1994,
-            poster: 'https://picsum.photos/200/400?random=1',
-        },
-        {
-            id: 2,
-            title: 'The Godfather',
-            publishingYear: 1972,
-            poster: 'https://picsum.photos/200/400?random=2',
-        },
-        {
-            id: 3,
-            title: 'The Dark Knight',
-            publishingYear: 2008,
-            poster: 'https://picsum.photos/200/400?random=3',
-        },
-    ];
+import { getMovieList } from '@/lib/api/movie.service';
+import ImageFallback from '@/components/ImageFallback';
 
+export default function MoviePage() {
     const [movies, setMovies] = useState<
-        { id: number; title: string; publishingYear: number; poster: string }[]
+        { id: number; title: string; publishingYear: number; posterUrl: string }[]
     >([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(6);
+    const [itemsPerPage] = useState(8);
+    const [totalItems, setTotalItems] = useState(0);
 
     useEffect(() => {
-        fetchMovies();
-    }, []);
+        fetchMovies(currentPage, itemsPerPage);
+    }, [currentPage, itemsPerPage]);
 
-    const fetchMovies = async () => {
-        setMovies(dummyDatas);
+    const fetchMovies = async (page: number, limit: number) => {
+        const response = await getMovieList({ page, limit }) as { data?: any; pagination?: any; };
+        if (response && response.data) {
+            setMovies(response.data);
+            setTotalItems(response.pagination.total);
+        }
     };
 
     return (
@@ -48,7 +35,7 @@ export default function MoviePage() {
             <Header />
             <MovieList
                 movies={movies}
-                pagination={{ currentPage, itemsPerPage, totalItems: 30 }}
+                pagination={{ currentPage, itemsPerPage, totalItems }}
                 handlePageChange={setCurrentPage}
             />
         </div>
@@ -165,27 +152,29 @@ const Movie = ({
     id,
     title,
     publishingYear,
-    poster,
+    posterUrl,
 }: {
     id: number;
     title: string;
     publishingYear: number;
-    poster: string;
+    posterUrl: string;
 }) => {
     return (
         <Link
             className="bg-card rounded-xl shadow-md cursor-pointer md:p-2"
             href={`/movies/${id}/edit`}
         >
-            <img
-                src={poster}
+            <ImageFallback
+                src={posterUrl}
                 alt={title}
+                width={1920}
+                height={2880}
+                fallbackSrc="/images/default-poster.jpg"
                 className="w-full h-[246px] sm:h-[320px] md:h-[400px] object-cover rounded-tl-xl rounded-tr-xl md:rounded-xl"
             />
             <div className="p-3">
                 <h3
                     className="text-base sm:text-[18px] md:text-[20px] font-bold md:font-normal leading-6 mb-4"
-                    style={{ minHeight: '50px' }}
                 >
                     {title}
                 </h3>
