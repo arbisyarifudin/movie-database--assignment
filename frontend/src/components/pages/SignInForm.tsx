@@ -19,7 +19,7 @@ export const SignInForm = () => {
         e.preventDefault();
 
         const response = await login({email, password, rememberMe})
-        if (response.data) {
+        if (response.status === 200 || response.status === 201) {
             // console.log('data', response)
             toast.success('Login success!')
 
@@ -31,7 +31,11 @@ export const SignInForm = () => {
             router.push('/movies');
         } else {
             console.log('login failed', response.data)
-            toast.error('Login failed!')
+            if (response.status === 401) {
+                toast.error('Email or password is incorrect')
+            } else {
+                toast.error(response.data.message)
+            }
         }
     };
 
