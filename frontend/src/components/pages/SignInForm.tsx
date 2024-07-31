@@ -5,6 +5,9 @@ import { InputField } from '@/components/InputField';
 import { Checkbox } from '@/components/Checkbox';
 import { Button } from '@/components/Button';
 import { useRouter } from 'next/navigation';
+import { login } from '@/lib/api/auth.service';
+import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
 
 export const SignInForm = () => {
     const [email, setEmail] = useState('');
@@ -12,12 +15,25 @@ export const SignInForm = () => {
     const [rememberMe, setRememberMe] = useState(false);
     const router = useRouter();
 
-    const onSubmitLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log(email, password, rememberMe);
 
-        // redirect to /movies
-        router.push('/movies');
+        const response = await login({email, password, rememberMe})
+        if (response.data) {
+            // console.log('data', response)
+            toast.success('Login success!')
+
+            // Cookies.set('access_token', response.data.data.access_token, { httpOnly: true, secure: true, sameSite: 'Strict' });
+            Cookies.set('access_token', response.data.data.access_token);
+            localStorage.setItem('user', JSON.stringify(response.data.data.user))
+
+            // redirect to /movies
+            router.push('/movies');
+        } else {
+            console.log('login failed', response.data)
+            toast.error('Login failed!')
+        }
     };
 
     return (

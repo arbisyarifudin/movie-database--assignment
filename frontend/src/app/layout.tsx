@@ -1,3 +1,4 @@
+import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
 import { Montserrat } from 'next/font/google';
 import './globals.css';
@@ -25,6 +26,7 @@ export default function RootLayout({
                     {children}
                 </main>
                 <Bottom />
+                <Toaster />
             </body>
         </html>
     );

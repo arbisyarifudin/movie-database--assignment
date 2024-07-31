@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/Button';
+import useAuthStore from '@/stores/authStore';
+import toast from 'react-hot-toast';
 export default function MoviePage() {
     const dummyDatas = [
         {
@@ -57,6 +59,13 @@ const Header = () => {
     const isMobile = useIsMobile();
     const router = useRouter();
 
+    const logout = useAuthStore((state: any) => state.logout)
+    const logoutSession = () => {
+        logout()
+        router.push('/')
+        toast.success('Logout success!')
+    }
+
     return (
         <div className="flex justify-between items-center mb-20">
             <div className="flex items-center">
@@ -85,7 +94,7 @@ const Header = () => {
                     </svg>
                 </button>
             </div>
-            <button className="flex items-center">
+            <button className="flex items-center" onClick={logoutSession}>
                 {!isMobile && <span className="mr-[10px]">Logout</span>}
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
