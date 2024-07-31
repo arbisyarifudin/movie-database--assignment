@@ -1,5 +1,7 @@
 import axiosInstance from './axiosConfig';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
+
 export const getMovieList = async (params?: {
     page?: number;
     limit?: number;
@@ -19,7 +21,6 @@ export const getMovieList = async (params?: {
 
         console.log('Success fetch movie list', response);
         if (response.data?.data) {
-            const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
             return {
                 data: response.data.data.map((item: any) => {
                     return {
@@ -36,6 +37,21 @@ export const getMovieList = async (params?: {
         return error;
     }
 };
+
+export const getMovieById = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(`/movies/${id}`);
+        console.log('Success fetch movie by id', response);
+        if (response.data.data) {
+            const posterUrl = `${apiUrl}${response.data.data.poster}`;
+            response.data.data.posterUrl = posterUrl;
+        }
+        return response
+    } catch (error: any) {
+        console.error('Error fetching movie by id:', error.response);
+        return error.response;
+    }
+}
 
 export const createMovie = async (data: {
     title: string;
@@ -72,7 +88,7 @@ export const deleteMovie = async (id: string) => {
     }
 };
 
-export const updateTaskList = async (
+export const updateMovie = async (
     id: string,
     data?: {
         title?: string;

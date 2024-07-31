@@ -11,10 +11,12 @@ export default function ImageFallback({ src, fallbackSrc, ...rest }: { src: stri
     return (
         <Image
             {...rest}
+            key={imgSrc}
             alt={rest.alt || 'Poster Image'}
             src={imgSrc}
-            onLoadingComplete={(result) => {
-                if (result.naturalWidth === 0) {
+            onLoad={(result) => {
+                const imageElement = result.target as HTMLImageElement;
+                if (imageElement.naturalWidth === 0) {
                     // Broken image
                     setImgSrc(fallbackSrc);
                 }
