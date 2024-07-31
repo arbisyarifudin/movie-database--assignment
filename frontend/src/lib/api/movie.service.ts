@@ -48,7 +48,11 @@ export const createMovie = async (data: {
         formData.append('publishingYear', String(data?.publishingYear ?? ''));
         formData.append('posterFile', data?.posterFile ?? '');
 
-        const response = await axiosInstance.post('/movies', formData);
+        const response = await axiosInstance.post('/movies', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         console.log('Success create movie list', response);
         return response;
     } catch (error: any) {
