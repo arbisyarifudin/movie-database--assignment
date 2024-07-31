@@ -10,10 +10,12 @@ import {
     Request,
     UseInterceptors,
     UploadedFile,
+    Query,
 } from '@nestjs/common';
 import { MovieService } from './movie.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
+import { PaginationQueryDto } from './movie.dto';
 
 @Controller('movies')
 @UseGuards(AuthGuard('jwt'))
@@ -36,8 +38,8 @@ export class MovieController {
     }
 
     @Get()
-    findAll() {
-        return this.movieService.findAll();
+    async findAll(@Query() query: PaginationQueryDto) {
+        return this.movieService.findAll(query);
     }
 
     @Get(':id')

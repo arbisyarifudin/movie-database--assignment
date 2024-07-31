@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Movie } from './movie.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
+import { PaginationQueryDto } from './movie.dto';
 
 @Injectable()
 export class MovieService {
@@ -15,8 +16,33 @@ export class MovieService {
         return this.moviesRepository.insert(newMovie);
     }
 
-    findAll() {
-        return this.moviesRepository.findAll();
+    async findAll(query: PaginationQueryDto) {
+        const page = Number(query.page || 1);
+        const limit = Number(query.limit || 10);
+
+        const sortBy = query.sortBy || 'created_at';
+        const sortDir = query.sortDir || 'ASC';
+
+        const items = await this.moviesRepository.find(
+            {},
+            {
+                limit,
+                offset: (page - 1) * limit,
+                orderBy: { [sortBy]: sortDir.toUpperCase() },
+            },
+        );
+
+        const total = await this.moviesRepository.count();
+
+        return {
+            message: 'Movies retrieved successfully',
+            data: items,
+            meta: {
+                page,
+                limit,
+                total,
+            },
+        };
     }
 
     findOne(id: string) {
