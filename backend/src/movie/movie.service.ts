@@ -27,7 +27,7 @@ export class MovieService {
         const page = Number(query.page || 1);
         const limit = Number(query.limit || 10);
 
-        const sortBy = query.sortBy || 'created_at';
+        const sortBy = query.sortBy || 'createdAt';
         const sortDir = query.sortDir || 'ASC';
 
         const items = await this.moviesRepository.find(

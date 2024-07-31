@@ -5,9 +5,15 @@ import {
     IsOptional,
 } from 'class-validator';
 
-enum SortDirection {
+enum SortDirectionEnum {
     ASC = 'asc',
     DESC = 'desc',
+}
+
+enum sortByEnum {
+    title = 'title',
+    publishingYear = 'publishingYear',
+    createdAt = 'createdAt',
 }
 
 export class PaginationQueryDto {
@@ -20,11 +26,12 @@ export class PaginationQueryDto {
     readonly limit?: number;
 
     @IsOptional()
-    readonly sortBy?: string;
+    @IsEnum(sortByEnum)
+    readonly sortBy?: sortByEnum;
 
     @IsOptional()
-    @IsEnum(SortDirection)
-    readonly sortDir?: SortDirection;
+    @IsEnum(SortDirectionEnum)
+    readonly sortDir?: SortDirectionEnum;
 }
 
 export class CreateMovieDto {
