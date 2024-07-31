@@ -5,15 +5,21 @@ import { useEffect, useRef, useState } from 'react';
 import { InputField } from '@/components/InputField';
 import { Button } from '@/components/Button';
 import { useRouter } from 'next/navigation';
-import { deleteMovie, getMovieById, updateMovie } from '@/lib/api/movie.service';
+import {
+    deleteMovie,
+    getMovieById,
+    updateMovie,
+} from '@/lib/api/movie.service';
 import toast from 'react-hot-toast';
+import Dialog from '@/components/Dialog';
+
 interface ErrorMessages {
     title?: string;
     publishingYear?: string;
     posterFile?: string;
 }
 
-export default function MovieEditPage({ params } : { params: { id: string } }) {
+export default function MovieEditPage({ params }: { params: { id: string } }) {
     const router = useRouter();
     const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -23,10 +29,12 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
     const [posterFileUrl, setPosterFileUrl] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const [errorMessages, setErrorMessages] = useState<ErrorMessages | null>(null);
+    const [errorMessages, setErrorMessages] = useState<ErrorMessages | null>(
+        null
+    );
 
     const getMovie = async () => {
-        setLoading(true)
+        setLoading(true);
         const response = await getMovieById(params.id);
         if (response.status === 200 && response.data.data) {
             const movie = response.data.data;
@@ -37,8 +45,8 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
             toast.error('Movie not found!');
             router.push('/movies');
         }
-        setLoading(false)
-    }
+        setLoading(false);
+    };
 
     useEffect(() => {
         if (!loading) {
@@ -49,7 +57,7 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
     const onSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const newErrorMessages = {...errorMessages}
+        const newErrorMessages = { ...errorMessages };
 
         if (!title) {
             newErrorMessages.title = 'Title is required';
@@ -59,9 +67,10 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
             newErrorMessages.publishingYear = 'Publishing Year is required';
         }
 
-        setErrorMessages({...newErrorMessages})
+        setErrorMessages({ ...newErrorMessages });
 
-        if (Object.values(newErrorMessages).some((value) => value.length > 0)) return
+        if (Object.values(newErrorMessages).some((value) => value.length > 0))
+            return;
 
         const response = await updateMovie(params.id, {
             title,
@@ -81,7 +90,7 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
         setErrorMessages({
             ...errorMessages,
             posterFile: '',
-        })
+        });
 
         setPosterFile(file);
     };
@@ -92,7 +101,11 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
         setPosterFile(null);
         setErrorMessages(null);
         router.push('/movies');
-    }
+    };
+
+    /* DELETION */
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const closeDialog = () => setIsDialogOpen(false);
 
     const onDeleteMovie = async () => {
         const response = await deleteMovie(params.id);
@@ -103,7 +116,7 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
         } else {
             toast.error('Movie deletion fails!');
         }
-    }
+    };
 
     return (
         <div className="p-5 md:p-10 pb-[120px] pt-[80px] md:pt-[120px] w-full">
@@ -116,16 +129,29 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
                     color="error"
                     label="Delete"
                     size="sm"
-                    onClick={onDeleteMovie}
+                    onClick={() => setIsDialogOpen(true)}
                 />
             </div>
+
+            <Dialog
+                title="Delete Movie"
+                isOpen={isDialogOpen}
+                onClose={closeDialog}
+                onConfirm={onDeleteMovie}
+            >
+                <p>Are you sure you want to delete this movie?</p>
+            </Dialog>
+
             <form
                 className="flex flex-col md:flex-row w-full my-5 md:space-x-10"
                 onSubmit={onSubmitForm}
                 ref={formRef}
             >
                 <div className="w-full lg:w-1/3 xl:w-1/3 order-2 md:order-1">
-                    <ImageUploadBox defaultImage={posterFileUrl} onImageChange={onImageChangeHandler} />
+                    <ImageUploadBox
+                        defaultImage={posterFileUrl}
+                        onImageChange={onImageChangeHandler}
+                    />
                 </div>
                 <div className="w-full lg:w-1/2 xl:w-1/3 order-1 md:order-2 lg:pl-[100px]">
                     <InputField
@@ -137,8 +163,8 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
                             setErrorMessages({
                                 ...errorMessages,
                                 title: '',
-                            })
-                            setTitle(e.target.value)
+                            });
+                            setTitle(e.target.value);
                         }}
                         error={(errorMessages?.title?.length ?? 0) > 0}
                         errorMessage={errorMessages?.title}
@@ -155,20 +181,18 @@ export default function MovieEditPage({ params } : { params: { id: string } }) {
                             setErrorMessages({
                                 ...errorMessages,
                                 publishingYear: '',
-                            })
-                            setPublishingYear(e.target.value)
+                            });
+                            setPublishingYear(e.target.value);
                         }}
                         error={(errorMessages?.publishingYear?.length ?? 0) > 0}
                         errorMessage={errorMessages?.publishingYear}
                     />
 
-                    {
-                        (errorMessages?.posterFile?.length ?? 0) > 0 && (
-                            <div className="text-error text-xs mt-2.5 leading-none">
-                                {errorMessages?.posterFile}
-                            </div>
-                        )
-                    }
+                    {(errorMessages?.posterFile?.length ?? 0) > 0 && (
+                        <div className="text-error text-xs mt-2.5 leading-none">
+                            {errorMessages?.posterFile}
+                        </div>
+                    )}
 
                     <div className="hidden md:flex items-center mt-[64px]">
                         <Button
