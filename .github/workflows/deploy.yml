@@ -1,0 +1,58 @@
+name: Build and Deploy to ECR
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v1
+
+            - name: Log in to Amazon ECR
+              id: ecr-login
+              uses: aws-actions/amazon-ecr-login@v1
+
+            - name: Extract ECR repository URI
+              id: ecr
+              run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names backend --query 'repositories[0].repositoryUri' --output text)"
+              env:
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Build, tag, and push backend image
+              run: |
+                  docker build -t backend ./backend
+                  docker tag backend:latest ${{ steps.ecr.outputs.uri }}:latest
+                  docker push ${{ steps.ecr.outputs.uri }}:latest
+
+            - name: Extract ECR repository URI
+              id: ecr-frontend
+              run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names frontend --query 'repositories[0].repositoryUri' --output text)"
+              env:
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Build, tag, and push frontend image
+              run: |
+                  docker build -t frontend ./frontend
+                  docker tag frontend:latest ${{ steps.ecr-frontend.outputs.uri }}:latest
+                  docker push ${{ steps.ecr-frontend.outputs.uri }}:latest
+
+            - name: Deploy to ECS
+              run: |
+                  aws ecs update-service --cluster my-cluster --service my-backend-service --force-new-deployment
+                  aws ecs update-service --cluster my-cluster --service my-frontend-service --force-new-deployment
+              env:
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
