@@ -1,74 +1,79 @@
-name: Build and Deploy to ECR
+name: Deploy to EC2
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        # permissions:
-        #     id-token: write
-        #     contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+      - name: Archive project files
+        run: zip -r app.zip ./*
 
-            - name: Configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v3
-              with:
-                 aws-region: ${{ secrets.AWS_REGION }}
-                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Copy project to EC2
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          port: 22
+          source: "app.zip"
+          target: "/home/ubuntu/app.zip"
 
-            - name: Log in to Amazon ECR
-              id: ecr-login
-              uses: aws-actions/amazon-ecr-login@v1
-              with:
-                  mask-password: "true"
+      - name: Extract project files on EC2
+        uses: appleboy/ssh-action@v0.1.1
+        with:
+          host: ${{ secrets.EC2_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            sudo apt update -y && sudo apt upgrade -y
+            sudo apt install -y build-essential libssl-dev curl
+            sudo apt install -y docker.io
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            cd /home/ubuntu
+            unzip app.zip
+            sudo docker-compose up --build -d
+            sudo apt install -y nginx
+            sudo tee /etc/nginx/sites-available/frontend <<EOL
+            server {
+                listen 81;
+                server_name _;
 
-            - name: Verify ECR Login
-              run: aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                location / {
+                    proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
+                }
+            }
+            EOL
+            sudo tee /etc/nginx/sites-available/backend <<EOL
+            server {
+                listen 82;
+                server_name _;
 
-            - name: Extract ECR repository URI for backend
-              id: ecr-backend
-              run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names backend --query 'repositories[0].repositoryUri' --output text)"
-              env:
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-            - name: Build, tag, and push backend image
-              run: |
-                  docker build -t backend ./backend
-                  docker tag backend:latest ${{ steps.ecr-backend.outputs.uri }}:latest
-                  docker push ${{ steps.ecr-backend.outputs.uri }}:latest
-
-            - name: Extract ECR repository URI for frontend
-              id: ecr-frontend
-              run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names frontend --query 'repositories[0].repositoryUri' --output text)"
-              env:
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-            - name: Build, tag, and push frontend image
-              run: |
-                  docker build -t frontend ./frontend
-                  docker tag frontend:latest ${{ steps.ecr-frontend.outputs.uri }}:latest
-                  docker push ${{ steps.ecr-frontend.outputs.uri }}:latest
-
-            - name: Deploy to ECS
-              run: |
-                  aws ecs update-service --cluster MovieDatabaseCluster --service MovieDatabaseBackendService --force-new-deployment
-                  aws ecs update-service --cluster MovieDatabaseCluster --service MovieDatabaseFrontendService --force-new-deployment
-              env:
-                  AWS_REGION: ${{ secrets.AWS_REGION }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                location / {
+                    proxy_pass http://localhost:4000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_cache_bypass \$http_upgrade;
+                }
+            }
+            EOL
+            sudo ln -s /etc/nginx/sites-available/frontend /etc/nginx/sites-enabled/
+            sudo ln -s /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/
+            sudo nginx -t
+            sudo systemctl restart nginx
