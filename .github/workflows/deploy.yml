@@ -50,7 +50,7 @@ jobs:
                   cp /home/ubuntu/app/frontend/.env.example /home/ubuntu/app/frontend/.env
 
                    echo "Replace API_BASE_URL in frontend/.env..."
-                   sed -i "s|API_BASE_URL=.*|API_BASE_URL=http://$HOSTNAME:8082|" /home/ubuntu/app/frontend/.env
+                   sed -i "s|API_BASE_URL=.*|API_BASE_URL=http://${{secrets.EC2_IP}}:8082|" /home/ubuntu/app/frontend/.env
 
                   echo "Stop existing containers"
                   docker-compose down
