@@ -36,7 +36,7 @@ $ npm run test:cov
 
 1. Run migration
 ```
-npx mikro-orm migration:run
+npx mikro-orm migration:up
 ```
 
 2. Run seeder
