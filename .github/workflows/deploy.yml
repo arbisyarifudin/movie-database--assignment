@@ -1,79 +1,121 @@
 name: Deploy to EC2
 
 on:
-  push:
-    branches:
-      - main
+    push:
+        branches:
+            - main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - name: Build & Deploy
+              env:
+                  PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+                  HOSTNAME: ${{secrets.EC2_IP}}
+                  USER_NAME: ubuntu
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+              run: |
+                  echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+                  ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
-      - name: Archive project files
-        run: zip -r app.zip ./*
+                  echo "Updating and upgrading system packages..."
+                  sudo apt update -y && sudo apt upgrade -y
 
-      - name: Copy project to EC2
-        uses: appleboy/scp-action@v0.1.1
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          port: 22
-          source: "app.zip"
-          target: "/home/ubuntu/app.zip"
+                  echo "Installing required dependencies..."
+                  sudo apt install -y build-essential libssl-dev curl
 
-      - name: Extract project files on EC2
-        uses: appleboy/ssh-action@v0.1.1
-        with:
-          host: ${{ secrets.EC2_IP }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            sudo apt update -y && sudo apt upgrade -y
-            sudo apt install -y build-essential libssl-dev curl
-            sudo apt install -y docker.io
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            cd /home/ubuntu
-            unzip app.zip
-            sudo docker-compose up --build -d
-            sudo apt install -y nginx
-            sudo tee /etc/nginx/sites-available/frontend <<EOL
-            server {
-                listen 81;
-                server_name _;
+                  echo "Installing Docker..."
+                  sudo apt install -y docker.io
 
-                location / {
-                    proxy_pass http://localhost:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade \$http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host \$host;
-                    proxy_cache_bypass \$http_upgrade;
-                }
-            }
-            EOL
-            sudo tee /etc/nginx/sites-available/backend <<EOL
-            server {
-                listen 82;
-                server_name _;
+                  echo "Checking if Docker Compose is already installed..."
+                  if ! [ -x "$(command -v docker-compose)" ]; then
+                  echo "Installing Docker Compose..."
+                  sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                  sudo chmod +x /usr/local/bin/docker-compose
+                  else
+                  echo "Docker Compose is already installed"
+                  fi
 
-                location / {
-                    proxy_pass http://localhost:4000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade \$http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host \$host;
-                    proxy_cache_bypass \$http_upgrade;
-                }
-            }
-            EOL
-            sudo ln -s /etc/nginx/sites-available/frontend /etc/nginx/sites-enabled/
-            sudo ln -s /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/
-            sudo nginx -t
-            sudo systemctl restart nginx
+                  echo "Pull git repository"
+                  cd /home/ubuntu/app
+                  git checkout main &&
+                  git fetch --all &&
+                  git reset --hard origin/main &&
+                  git pull origin main
+
+                  echo "Copy .env.example to .env..."
+                  cp /home/ubuntu/app/backend/.env.example /home/ubuntu/app/backend/.env
+                  cp /home/ubuntu/app/frontend/.env.example /home/ubuntu/app/frontend/.env
+
+                   echo "Replace API_BASE_URL in frontend/.env..."
+                   sed -i "s|API_BASE_URL=.*|API_BASE_URL=http://$HOSTNAME:8082|" /home/ubuntu/app/frontend/.env
+
+                  echo "Stop existing containers"
+                  docker-compose down
+                  docker container prune -f
+                  docker network prune -f
+
+                  echo "Check network ports..."
+                  sudo ss -tuln
+                  sudo systemctl restart docker
+
+                  chmod +x ~/free_port.sh
+                  ~/free_port.sh 8081
+                  ~/free_port.sh 8082
+
+                  chmod +x ~/stop_docker_port.sh
+                  ~/stop_docker_port.sh 8081
+                  ~/stop_docker_port.sh 8082
+
+                  echo "Building and running Docker containers..."
+                  FRONTEND_PORT=8081 BACKEND_PORT=8082 docker-compose up --build -d
+
+                  echo "Installing Nginx..."
+                  sudo apt install -y nginx
+
+                  echo "Configuring Nginx for frontend and backend..."
+                  sudo tee /etc/nginx/sites-available/frontend <<EOL
+                  server {
+                      listen 8081;
+                      server_name _;
+
+                      location / {
+                          proxy_pass http://localhost:3000;
+                          proxy_http_version 1.1;
+                          proxy_set_header Upgrade \$http_upgrade;
+                          proxy_set_header Connection 'upgrade';
+                          proxy_set_header Host \$host;
+                          proxy_cache_bypass \$http_upgrade;
+                      }
+                  }
+                  EOL
+                  sudo tee /etc/nginx/sites-available/backend <<EOL
+                  server {
+                      listen 8082;
+                      server_name _;
+
+                      location / {
+                          proxy_pass http://localhost:4000;
+                          proxy_http_version 1.1;
+                          proxy_set_header Upgrade \$http_upgrade;
+                          proxy_set_header Connection 'upgrade';
+                          proxy_set_header Host \$host;
+                          proxy_cache_bypass \$http_upgrade;
+                      }
+                  }
+                  EOL
+
+                  echo "Enabling Nginx sites..."
+                  sudo ln -s /etc/nginx/sites-available/frontend /etc/nginx/sites-enabled/
+                  sudo ln -s /etc/nginx/sites-available/backend /etc/nginx/sites-enabled/
+
+                  echo "Testing Nginx configuration..."
+                  sudo nginx -t
+
+                  echo "Restarting Nginx service..."
+                  sudo systemctl restart nginx
+
+                  echo "Deployment completed successfully!"
+                  '
