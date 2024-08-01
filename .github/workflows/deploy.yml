@@ -9,19 +9,35 @@ jobs:
     build-and-deploy:
         runs-on: ubuntu-latest
 
+        # permissions:
+        #     id-token: write
+        #     contents: read
+
         steps:
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v3
 
-            - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v1
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                 aws-region: ${{ secrets.AWS_REGION }}
+                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
             - name: Log in to Amazon ECR
               id: ecr-login
               uses: aws-actions/amazon-ecr-login@v1
+              with:
+                  mask-password: "true"
 
-            - name: Extract ECR repository URI
-              id: ecr
+            - name: Verify ECR Login
+              run: aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Extract ECR repository URI for backend
+              id: ecr-backend
               run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names backend --query 'repositories[0].repositoryUri' --output text)"
               env:
                   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -31,10 +47,10 @@ jobs:
             - name: Build, tag, and push backend image
               run: |
                   docker build -t backend ./backend
-                  docker tag backend:latest ${{ steps.ecr.outputs.uri }}:latest
-                  docker push ${{ steps.ecr.outputs.uri }}:latest
+                  docker tag backend:latest ${{ steps.ecr-backend.outputs.uri }}:latest
+                  docker push ${{ steps.ecr-backend.outputs.uri }}:latest
 
-            - name: Extract ECR repository URI
+            - name: Extract ECR repository URI for frontend
               id: ecr-frontend
               run: echo "::set-output name=uri::$(aws ecr describe-repositories --repository-names frontend --query 'repositories[0].repositoryUri' --output text)"
               env:
@@ -50,8 +66,8 @@ jobs:
 
             - name: Deploy to ECS
               run: |
-                  aws ecs update-service --cluster my-cluster --service my-backend-service --force-new-deployment
-                  aws ecs update-service --cluster my-cluster --service my-frontend-service --force-new-deployment
+                  aws ecs update-service --cluster MovieDatabaseCluster --service MovieDatabaseBackendService --force-new-deployment
+                  aws ecs update-service --cluster MovieDatabaseCluster --service MovieDatabaseFrontendService --force-new-deployment
               env:
                   AWS_REGION: ${{ secrets.AWS_REGION }}
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
