@@ -2,7 +2,8 @@ import axios from 'axios';
 import { cookies } from 'next/headers';
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000',
+    // baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000',
+    baseURL: process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://backend:4000',
     headers: {
         'Content-Type': 'application/json',
     },

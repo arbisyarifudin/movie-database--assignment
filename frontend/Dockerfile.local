@@ -14,6 +14,10 @@ COPY . .
 # This is needed for hot reloading to work on Windows
 ENV WATCHPACK_POLLING true
 
+# Set the environment variables
+ENV API_BASE_URL "http://backend:4000"
+ENV NEXT_PUBLIC_API_BASE_URL "http://localhost:4000"
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
