@@ -29,7 +29,7 @@ export const InputField = ({
     const inputClassName = `mt-1 p-2 border rounded-[10px] py-3 px-4 outline-none transition ease-in-out delay-150 text-white placeholder:text-white placeholder:opacity-80 placeholder:text-sm
   ${
     error
-        ? '!bg-white !border-error !text-error placeholder:text-error'
+        ? '!bg-input !border-error !text-error placeholder:text-error'
         : isFocused
             ? '!bg-white !border-input !text-input placeholder:text-input'
             : '!bg-input !border-input'
