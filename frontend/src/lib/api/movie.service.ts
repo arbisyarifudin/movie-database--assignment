@@ -100,8 +100,17 @@ export const updateMovie = async (
         const formData = new FormData();
         formData.append('title', data?.title ?? '');
         formData.append('publishingYear', String(data?.publishingYear ?? ''));
-        formData.append('posterFile', data?.posterFile ?? '');
-        const response = await axiosInstance.put(`/movies/${id}`, formData);
+        // formData.append('posterFile', data?.posterFile ?? '');
+
+        if (data?.posterFile) {
+            formData.append('posterFile', data.posterFile, data.posterFile.name);
+        }
+
+        const response = await axiosInstance.put(`/movies/${id}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         console.log('Success update movie list', response);
         return response;
     } catch (error: any) {
