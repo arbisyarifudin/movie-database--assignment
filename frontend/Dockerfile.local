@@ -11,6 +11,9 @@ RUN npm install
 
 COPY . .
 
+# This is needed for hot reloading to work on Windows
+ENV WATCHPACK_POLLING true
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
