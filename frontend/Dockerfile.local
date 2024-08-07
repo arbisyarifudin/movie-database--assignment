@@ -1,0 +1,16 @@
+# Dockerfile.local
+# This file is used to build the frontend image for local development.
+
+FROM node:18
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]

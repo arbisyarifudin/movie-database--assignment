@@ -1,0 +1,31 @@
+# docker-compose.local.yml
+# This file is used to run the application in a local environment.
+
+version: '3.8'
+
+services:
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.local
+        ports:
+            - "${BACKEND_PORT:-4000}:4000"
+        env_file:
+            - ./backend/.env
+        networks:
+            - moviedb-network
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.local
+        ports:
+            - "${FRONTEND_PORT:-3000}:3000"
+        env_file:
+            - ./frontend/.env
+        networks:
+            - moviedb-network
+
+networks:
+    moviedb-network:
+        driver: bridge
