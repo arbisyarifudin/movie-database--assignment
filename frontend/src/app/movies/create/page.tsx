@@ -26,6 +26,7 @@ export default function MovieCreatePage() {
     const onSubmitForm = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        // validate user inputs
         const newErrorMessages = {...errorMessages}
 
         if (!title) {
@@ -42,6 +43,7 @@ export default function MovieCreatePage() {
 
         setErrorMessages({...newErrorMessages})
 
+        // if there is any error message, stop the submission, show the error message
         if (Object.values(newErrorMessages).some((value) => value.length > 0)) return
 
         const response = await createMovie({

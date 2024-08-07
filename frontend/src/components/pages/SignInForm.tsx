@@ -9,14 +9,38 @@ import { login } from '@/lib/api/auth.service';
 import toast from 'react-hot-toast';
 import Cookies from 'js-cookie';
 
+interface ErrorMessages {
+    email?: string;
+    password?: string;
+}
+
 export const SignInForm = () => {
+    const router = useRouter();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
-    const router = useRouter();
+
+    const [errorMessages, setErrorMessages] = useState<ErrorMessages | null>(null);
 
     const onSubmitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        // validate user inputs
+        const newErrorMessages = {...errorMessages}
+
+        if (!email) {
+            newErrorMessages.email = 'Email is required';
+        }
+
+        if (!password) {
+            newErrorMessages.password = 'Password is required';
+        }
+
+        setErrorMessages({...newErrorMessages})
+
+        // if there is any error message, stop the submission, show the error message
+        if (Object.values(newErrorMessages).some((value) => value.length > 0)) return
 
         const response = await login({email, password, rememberMe})
         if (response.status === 200 || response.status === 201) {
@@ -40,7 +64,7 @@ export const SignInForm = () => {
     };
 
     return (
-        <form className="block w-full sm:max-w-sm md:max-w-xs my-5" onSubmit={onSubmitLogin}>
+        <form className="block w-full sm:max-w-sm md:max-w-xs my-5" onSubmit={onSubmitLogin}>assaasas
             <InputField
                 id="email"
                 className="mb-6"
@@ -48,7 +72,15 @@ export const SignInForm = () => {
                 placeholder="Email"
                 value={email}
                 autoComplete="new-password"
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                    setErrorMessages({
+                        ...errorMessages,
+                        email: '',
+                    })
+                    setEmail(e.target.value)
+                }}
+                error={(errorMessages?.email?.length ?? 0) > 0}
+                errorMessage={errorMessages?.email}
             />
             <InputField
                 id="password"
@@ -57,7 +89,15 @@ export const SignInForm = () => {
                 placeholder="Password"
                 autoComplete="new-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                    setErrorMessages({
+                        ...errorMessages,
+                        password: '',
+                    })
+                    setPassword(e.target.value)
+                }}
+                error={(errorMessages?.password?.length ?? 0) > 0}
+                errorMessage={errorMessages?.password}
             />
 
             <div className="flex justify-center">
