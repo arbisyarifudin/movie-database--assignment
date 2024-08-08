@@ -6,6 +6,9 @@ The stack used in this project includes `Next.js` for the frontend, `Nest.js` fo
 
 This project can be run using Docker or a conventional approach. Instructions for installation are explained in each stack directory: `backend` and `frontend` directories.
 
+## Screenshot
+![Screenshot](./screenshot.png "Screenshot")
+
 ## Features
 - Login & Logout
 - Auth guard middleware
@@ -21,9 +24,6 @@ This project can be run using Docker or a conventional approach. Instructions fo
 - ORM: Next.js Mikro-ORM, support migration and seeder
 - Database: SQLite (you can change to whatever database you like)
 - Typescript
-
-## Screenshot
-![Screenshot](./screenshot.png "Screenshot")
 
 ## Live preview
 You can see live preview [here](http://43.218.241.82:8081/)
